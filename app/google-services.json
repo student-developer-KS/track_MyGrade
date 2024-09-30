@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "443169239935",
+    "project_id": "app1-ec550",
+    "storage_bucket": "app1-ec550.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:443169239935:android:8c66e3fd87c02ca623e04a",
+        "android_client_info": {
+          "package_name": "com.student_developer.track_my_grade"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDh7Y3xwldCPRX8CzQTtJzrMgD4Bg3a5BQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
