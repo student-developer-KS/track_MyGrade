@@ -13,6 +13,7 @@ lifecycleLivedataKtx = "2.8.6"
 lifecycleViewmodelKtx = "2.8.6"
 firebaseAuth = "23.0.0"
 firebaseFirestore = "25.1.0"
+googleGmsGoogleServices = "4.4.2"
 
 [libraries]
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
@@ -31,4 +32,5 @@ firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
 

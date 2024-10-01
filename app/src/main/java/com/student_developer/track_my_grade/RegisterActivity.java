@@ -14,33 +14,39 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseNetworkException;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class RegisterActivity extends AppCompatActivity {
 
     private EditText rollno, etEmail, etPassword, etConfirmPassword;
     private ProgressBar progressBar;
-    private Button btnRegisterSubmit;
+    private Button btnRegisterSubmit, btn_mv_tosignup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Enable edge-to-edge mode (if supported in your project)
         EdgeToEdge.enable(this);
-
         setContentView(R.layout.activity_register);
 
-        // Initialize UI elements
         initUI();
 
-        // Handle register button click
+        //btn_mv_tosignup.setOnClickListener(v -> startActivity(new Intent(RegisterActivity.this, LoginActivity.class)));
         btnRegisterSubmit.setOnClickListener(v -> registerUser());
 
-        // Handle login prompt click
         TextView loginPrompt = findViewById(R.id.loginPrompt);
         loginPrompt.setOnClickListener(v -> startActivity(new Intent(RegisterActivity.this, LoginActivity.class)));
     }
 
-    // Method to initialize UI elements
     private void initUI() {
         rollno = findViewById(R.id.etName);
         etEmail = findViewById(R.id.etEmail);
@@ -48,85 +54,113 @@ public class RegisterActivity extends AppCompatActivity {
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
         btnRegisterSubmit = findViewById(R.id.btnRegisterSubmit);
         progressBar = findViewById(R.id.progressBar);
-
-        // Set default background for EditText fields
+        btn_mv_tosignup = findViewById(R.id.btnLogin);
         setEditTextBackgrounds();
     }
 
-    // Method to set EditText backgrounds
     private void setEditTextBackgrounds() {
-        rollno.setBackground(ContextCompat.getDrawable(this, R.drawable.edittext_backgrouond));
-        etEmail.setBackground(ContextCompat.getDrawable(this, R.drawable.edittext_backgrouond));
-        etPassword.setBackground(ContextCompat.getDrawable(this, R.drawable.edittext_backgrouond));
-        etConfirmPassword.setBackground(ContextCompat.getDrawable(this, R.drawable.edittext_backgrouond));
+        int backgroundResource = R.drawable.edittext_backgrouond;
+        rollno.setBackground(ContextCompat.getDrawable(this, backgroundResource));
+        etEmail.setBackground(ContextCompat.getDrawable(this, backgroundResource));
+        etPassword.setBackground(ContextCompat.getDrawable(this, backgroundResource));
+        etConfirmPassword.setBackground(ContextCompat.getDrawable(this, backgroundResource));
     }
 
-    // Registration validation and process
     private void registerUser() {
         String roll_no = rollno.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
         String confirmPassword = etConfirmPassword.getText().toString().trim();
 
-        // Validation checks
-        if (!validateInput(roll_no, email, password, confirmPassword)) {
-            return;  // Stop further execution if validation fails
+        if (validateInput(roll_no, email, password, confirmPassword)) {
+            showProgressBar(true);
+            FirebaseAuth auth = FirebaseAuth.getInstance();
+            auth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(this, task -> handleRegistrationResult(task, roll_no, email));
         }
-
-        // Show progress bar and disable the button to prevent multiple submissions
-        progressBar.setVisibility(View.VISIBLE);
-        btnRegisterSubmit.setEnabled(false);
-
-        // Simulate successful registration (Navigate to login page)
-        startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
-
-        // Hide progress bar and enable the button again after navigating
-        progressBar.setVisibility(View.GONE);
-        btnRegisterSubmit.setEnabled(true);
     }
 
-    // Validation method for user input
+    private void handleRegistrationResult(Task<AuthResult> task, String roll_no, String email) {
+        if (task.isSuccessful()) {
+            saveUserData(roll_no, email);
+        } else {
+            handleError(task.getException());
+            clearPasswordFields();
+        }
+        showProgressBar(false);
+    }
+
+    private void saveUserData(String roll_no, String email) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("roll_no", roll_no);
+        userData.put("email", email);
+
+        db.collection("users").document(userId)
+                .set(userData)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(RegisterActivity.this, "Registration successful and data saved!", Toast.LENGTH_SHORT).show();
+                    //startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                    finish();
+                })
+                .addOnFailureListener(e -> Toast.makeText(RegisterActivity.this, "Failed to save user data.", Toast.LENGTH_SHORT).show());
+    }
+
+    private void handleError(Exception exception) {
+        String errorMessage = "Registration failed. Please try again.";
+        if (exception instanceof FirebaseAuthWeakPasswordException) {
+            errorMessage = "Weak password! Please choose a stronger password.";
+        } else if (exception instanceof FirebaseAuthInvalidCredentialsException) {
+            errorMessage = "Invalid email! Please provide a valid email address.";
+        } else if (exception instanceof FirebaseAuthUserCollisionException) {
+            errorMessage = "Email already in use! Please use a different email.";
+        } else if (exception instanceof FirebaseNetworkException) {
+            errorMessage = "Network error. Please check your internet connection.";
+        }
+        Toast.makeText(RegisterActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+    }
+
+    private void clearPasswordFields() {
+        etPassword.getText().clear();
+        etConfirmPassword.getText().clear();
+    }
+
+    private void showProgressBar(boolean show) {
+        progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
+        btnRegisterSubmit.setEnabled(!show);
+        btnRegisterSubmit.setText(show ? "Registering..." : "Register");
+    }
+
     private boolean validateInput(String roll_no, String email, String password, String confirmPassword) {
         boolean valid = true;
 
-        if (TextUtils.isEmpty(roll_no)) {
-            setError(rollno, "Roll No is required.");
-            valid = false;
-        } else if (roll_no.length() < 7) {
-            setError(rollno, "Enter a valid Roll No.");
+        if (TextUtils.isEmpty(roll_no) || roll_no.length() < 7) {
+            setError(rollno, "Enter a valid Roll No (minimum 7 characters).");
             valid = false;
         }
 
-        if (TextUtils.isEmpty(email)) {
-            setError(etEmail, "Email is required.");
-            valid = false;
-        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        if (TextUtils.isEmpty(email) || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             setError(etEmail, "Enter a valid email.");
             valid = false;
         }
 
-        if (TextUtils.isEmpty(password)) {
-            setError(etPassword, "Password is required.");
+        if (TextUtils.isEmpty(password) || password.length() < 6) {
+            setError(etPassword, "Password should be at least 6 characters long.");
             valid = false;
         }
 
-        if (TextUtils.isEmpty(confirmPassword)) {
-            setError(etConfirmPassword, "Confirm Password is required.");
-            valid = false;
-        } else if (!password.equals(confirmPassword)) {
+        if (TextUtils.isEmpty(confirmPassword) || !password.equals(confirmPassword)) {
             setError(etConfirmPassword, "Passwords do not match.");
             valid = false;
         }
 
-        // Reset background for all fields if validation passes
         if (valid) {
             setEditTextBackgrounds();
         }
-
         return valid;
     }
 
-    // Method to set error and change background for invalid inputs
     private void setError(EditText editText, String message) {
         editText.setError(message);
         editText.setBackground(ContextCompat.getDrawable(this, R.drawable.edit_text_round_corner));

@@ -18,7 +18,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private EditText etEmail, etPassword;
     private ProgressBar progressBar;
-    private Button btnSubmitLogin;
+    private Button btnSubmitLogin,btn_mv_tologin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,8 +34,11 @@ public class LoginActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.etPassword);
         progressBar = findViewById(R.id.progressBar);
         btnSubmitLogin = findViewById(R.id.btnLoginSubmit);
+        btn_mv_tologin=findViewById(R.id.btnSignUp);
 
         // Handle login button click
+        btn_mv_tologin.setOnClickListener(v -> startActivity(new Intent(LoginActivity.this, RegisterActivity.class)));
+
         btnSubmitLogin.setOnClickListener(v -> loginUser());
 
         // Handle registration prompt click
