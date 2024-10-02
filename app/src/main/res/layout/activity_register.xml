@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/gradient_bf"
     android:orientation="vertical"
     android:gravity="center_horizontal"
@@ -52,18 +52,19 @@
 
     <!-- Name EditText -->
     <EditText
-        android:id="@+id/etName"
+        android:id="@+id/etRollNo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Roll No"
-        android:maxLength="7"
+        android:maxLength="8"
         android:drawableStart="@drawable/baseline_person_24"
         android:textColor="@color/black"
         android:textColorHint="@color/gray"
         android:padding="12dp"
         android:layout_marginTop="16dp"
+        android:drawablePadding="20dp"
         android:background="@drawable/edittext_backgrouond"
-    android:inputType="textPersonName" />
+    android:inputType="text" />
 
     <!-- Email EditText -->
     <EditText
@@ -76,23 +77,67 @@
         android:textColorHint="@color/gray"
         android:padding="12dp"
         android:layout_marginTop="16dp"
+        android:drawablePadding="20dp"
         android:background="@drawable/edittext_backgrouond"
-        android:maxLength="35"/>
+        android:maxLength="35"
+        android:inputType="textEmailAddress"/>
 
-    <!-- Password EditText -->
-    <EditText
-        android:id="@+id/etPassword"
+    
+
+
+
+        <!-- Password EditText -->
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Password"
-        android:drawableStart="@drawable/baseline_lock_24"
-        android:textColor="@color/black"
-        android:textColorHint="@color/gray"
-        android:padding="12dp"
-        android:maxLength="10"
-        android:layout_marginTop="16dp"
-        android:inputType="textPassword"
-        android:background="@drawable/edittext_backgrouond" />
+        android:layout_marginTop="16dp">
+
+        <!-- Password EditText -->
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:drawableStart="@drawable/baseline_lock_24"
+            android:textColor="@color/black"
+            android:textColorHint="@color/gray"
+            android:padding="12dp"
+            android:maxLength="10"
+            android:inputType="textPassword"
+            android:drawablePadding="20dp"
+            android:background="@drawable/edittext_backgrouond"/>
+
+        <ImageView
+            android:id="@+id/ivTogglePassword"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/ic_visibility_off"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="8dp"
+            android:clickable="true"
+            android:focusable="true"/>
+
+    </RelativeLayout>
+
+
+
+
+
+
+    <!-- Password Strength Indicator -->
+    <TextView
+        android:id="@+id/passwordStrength_Indicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Password Strength"
+        android:paddingTop="8dp"
+        android:textSize="16sp"
+        android:layout_gravity="end"
+        android:layout_marginEnd="8dp"
+        android:visibility="gone"
+        android:textColor="@android:color/black"/>
+
 
     <!-- Confirm Password EditText -->
     <EditText
@@ -106,7 +151,9 @@
         android:maxLength="10"
         android:padding="12dp"
         android:layout_marginTop="16dp"
-        android:background="@drawable/edittext_backgrouond" />
+        android:drawablePadding="20dp"
+        android:background="@drawable/edittext_backgrouond"
+        android:inputType="textVisiblePassword"/>
 
     <Button
         android:id="@+id/btnRegisterSubmit"

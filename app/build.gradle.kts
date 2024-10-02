@@ -1,6 +1,5 @@
 plugins {
     id("com.android.application")
-    id("com.google.gms.google-services") version "4.4.2" apply false
 }
 
 android {
@@ -15,6 +14,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Enable multidex if necessary
+        multiDexEnabled = true
     }
 
     buildTypes {
@@ -26,30 +28,48 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
+
     buildFeatures {
         viewBinding = true
+
     }
+
 }
 
 dependencies {
-
     implementation(libs.appcompat)
-    implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     implementation(libs.annotation)
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.viewmodel.ktx)
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
+
+    // Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
+
+    // Firebase services
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+
+    // Lottie animations
+    implementation("com.airbnb.android:lottie-compose:5.0.3")
+
+    // Multidex support if enabled
+    implementation("androidx.multidex:multidex:2.0.1")
+    implementation(libs.material)
+
+    // Material Design Components (if needed)
+    // implementation("com.google.android.material:material:1.9.0")
+
+    // Testing Libraries
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-    implementation(libs.firebase.bom)
-    implementation("com.airbnb.android:lottie-compose:5.0.3")
-
 }
+
+apply(plugin = "com.google.gms.google-services")
