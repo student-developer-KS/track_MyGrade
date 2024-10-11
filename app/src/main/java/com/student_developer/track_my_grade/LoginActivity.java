@@ -128,7 +128,7 @@ public class LoginActivity extends AppCompatActivity {
             FirebaseUser firebaseuser = authLogin.getCurrentUser();
             if(firebaseuser.isEmailVerified()){
 
-                navigateTo(MainActivity.class);
+                navigateTo(CalculatorActivity.class);
                 showToast("Login successful!");
 
             }else{
@@ -266,7 +266,7 @@ public class LoginActivity extends AppCompatActivity {
         return activeNetwork != null && activeNetwork.isConnected();
     }
 
-    private void hideKeyboard(View view) {
+    public void hideKeyboard(View view) {
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         if (imm != null) {
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
@@ -276,15 +276,15 @@ public class LoginActivity extends AppCompatActivity {
 
 
 
-//    @Override
-//    protected void onStart(){
-//        super.onStart();
-//        if(authLogin.getCurrentUser()!=null){
-//            Snackbar.make(LoginActivity.this.getCurrentFocus(),"Already Logged In!", Snackbar.LENGTH_SHORT).show();
-//            navigateTo(MainActivity.class);
-//            finish();
-//        }else{
-//            Snackbar.make(LoginActivity.this.getCurrentFocus(),"You Can Login Now!", Snackbar.LENGTH_SHORT).show();
-//        }
-//    }
+    @Override
+    protected void onStart(){
+        super.onStart();
+        if(authLogin.getCurrentUser()!=null){
+            Snackbar.make(LoginActivity.this.getCurrentFocus(),"Already Logged In!", Snackbar.LENGTH_SHORT).show();
+            navigateTo(CalculatorActivity.class);
+            finish();
+        }else{
+            Snackbar.make(LoginActivity.this.getCurrentFocus(),"You Can Login Now!", Snackbar.LENGTH_SHORT).show();
+        }
+    }
 }

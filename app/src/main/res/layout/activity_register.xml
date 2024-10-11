@@ -176,6 +176,7 @@
         android:textSize="14sp"
         android:layout_marginTop="24dp" />
 
+
     <!-- Optional ProgressBar for loading state -->
     <ProgressBar
         android:id="@+id/progressBar"
