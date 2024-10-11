@@ -1,0 +1,99 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/gradient_bf"
+    android:gravity="center">
+
+    <!-- Subject Input Texts -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center"
+        android:layout_marginTop="16dp">
+
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Input text"
+            android:inputType="text"
+            android:padding="8dp"
+            android:background="@drawable/edittext_backgrouond"/>
+
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:hint="Input text"
+            android:inputType="text"
+            android:padding="8dp"
+            android:background="@drawable/edittext_backgrouond"/>
+
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:hint="Input text"
+            android:inputType="text"
+            android:padding="8dp"
+            android:background="@drawable/edittext_backgrouond"/>
+    </LinearLayout>
+
+    <!-- Calculate CGPA Button -->
+    <Button
+        android:id="@+id/btn_calculate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Calculate CGPA"
+        android:backgroundTint="@color/blue_600"
+        android:textColor="@android:color/white"
+        android:layout_margin="16dp"/>
+
+    <!-- CGPA Result -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginTop="16dp">
+
+        <TextView
+            android:id="@+id/cgpa_result"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CGPA Result"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/your_cgpa"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your CGPA: 3.85"
+            android:textSize="18sp"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save in Profile"
+            android:backgroundTint="@color/blue_600"
+            android:textColor="@android:color/white"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            />
+    </LinearLayout>
+</LinearLayout>

@@ -128,7 +128,7 @@ public class LoginActivity extends AppCompatActivity {
             FirebaseUser firebaseuser = authLogin.getCurrentUser();
             if(firebaseuser.isEmailVerified()){
 
-                navigateTo(MainActivity.class);
+                navigateTo(CalculatorActivity.class);
                 showToast("Login successful!");
 
             }else{
@@ -276,15 +276,15 @@ public class LoginActivity extends AppCompatActivity {
 
 
 
-//    @Override
-//    protected void onStart(){
-//        super.onStart();
-//        if(authLogin.getCurrentUser()!=null){
-//            Snackbar.make(LoginActivity.this.getCurrentFocus(),"Already Logged In!", Snackbar.LENGTH_SHORT).show();
-//            navigateTo(MainActivity.class);
-//            finish();
-//        }else{
-//            Snackbar.make(LoginActivity.this.getCurrentFocus(),"You Can Login Now!", Snackbar.LENGTH_SHORT).show();
-//        }
-//    }
+    @Override
+    protected void onStart(){
+        super.onStart();
+        if(authLogin.getCurrentUser()!=null){
+            Snackbar.make(LoginActivity.this.getCurrentFocus(),"Already Logged In!", Snackbar.LENGTH_SHORT).show();
+            navigateTo(CalculatorActivity.class);
+            finish();
+        }else{
+            Snackbar.make(LoginActivity.this.getCurrentFocus(),"You Can Login Now!", Snackbar.LENGTH_SHORT).show();
+        }
+    }
 }
