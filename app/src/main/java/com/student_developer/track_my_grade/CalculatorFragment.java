@@ -23,6 +23,8 @@ import android.widget.Toast;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.snackbar.Snackbar;
+
 public class CalculatorFragment extends Fragment {
 
     // Existing member variables
@@ -35,6 +37,39 @@ public class CalculatorFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_calculator, container, false);
+
+        if (getActivity() != null) {
+            // Accessing TextViews and Views in the activity layout
+            TextView tvActivityProfile = getActivity().findViewById(R.id.tv_profile);
+            TextView tvCgpa = getActivity().findViewById(R.id.tv_cgpa);
+            TextView tvGraph = getActivity().findViewById(R.id.tv_graph);
+            View vProfile = getActivity().findViewById(R.id.v_profile);
+            View vCgpa = getActivity().findViewById(R.id.v_cgpa);
+            View vGraph = getActivity().findViewById(R.id.v_graph);
+
+            // Change the text color of the TextViews in the activity
+            if (tvActivityProfile != null) {
+                tvActivityProfile.setTextColor(ContextCompat.getColor(requireContext(), R.color.blue_600));
+            }
+            if (tvCgpa != null) {
+                tvCgpa.setTextColor(ContextCompat.getColor(requireContext(), R.color.purple_500));
+            }
+            if (tvGraph != null) {
+                tvGraph.setTextColor(ContextCompat.getColor(requireContext(), R.color.blue_600));
+            }
+
+            // Set visibility for specific views
+            if (vProfile != null) {
+                vProfile.setVisibility(View.GONE); // Show profile view
+            }
+            if (vCgpa != null) {
+                vCgpa.setVisibility(View.VISIBLE); // Hide CGPA view
+            }
+            if (vGraph != null) {
+                vGraph.setVisibility(View.GONE); // Hide graph view
+            }
+        }
+
 
         // Initialize UI components
         etNoOfSubs = view.findViewById(R.id.et_no_of_subjects);
@@ -108,6 +143,7 @@ public class CalculatorFragment extends Fragment {
         subjectNameParams.setMargins(0, convertDpToPx(10), convertDpToPx(30), 0); // marginTop 10dp and marginEnd 30dp
         etSubjectName.setLayoutParams(subjectNameParams);
         etSubjectName.setHint("Subject " + subjectNumber);
+        etSubjectName.setTextColor(ContextCompat.getColor(requireContext(), R.color.green));
         etSubjectName.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edittext_backgrouond));
         etSubjectName.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         etSubjectName.setPadding(convertDpToPx(10), convertDpToPx(10), convertDpToPx(10), convertDpToPx(10)); // Padding 10dp
@@ -125,6 +161,7 @@ public class CalculatorFragment extends Fragment {
         crParams.setMargins(0, convertDpToPx(10), 0, 0); // marginTop 10dp
         etCr.setLayoutParams(crParams);
         etCr.setHint("Enter CR");
+        etCr.setTextColor(ContextCompat.getColor(requireContext(), R.color.green));
         etCr.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edittext_backgrouond));
         etCr.setInputType(InputType.TYPE_CLASS_NUMBER);
         etCr.setPadding(convertDpToPx(10), convertDpToPx(10), convertDpToPx(10), convertDpToPx(10)); // Padding 10dp
@@ -142,6 +179,7 @@ public class CalculatorFragment extends Fragment {
         gpParams.setMargins(convertDpToPx(30), convertDpToPx(10), 0, 0); // marginTop 10dp and marginStart 30dp
         etGp.setLayoutParams(gpParams);
         etGp.setHint("Enter GP");
+        etGp.setTextColor(ContextCompat.getColor(requireContext(), R.color.green));
         etGp.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edittext_backgrouond));
         etGp.setInputType(InputType.TYPE_CLASS_NUMBER);
         etGp.setPadding(convertDpToPx(10), convertDpToPx(10), convertDpToPx(10), convertDpToPx(10)); // Padding 10dp
@@ -220,15 +258,19 @@ public class CalculatorFragment extends Fragment {
         btnCalculate.setBackgroundTintList(ContextCompat.getColorStateList(requireContext(), R.color.blue_600));
         btnCalculate.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white));
         btnCalculate.setPadding(20, 20, 20, 20);
-        btnCalculate.setGravity(View.TEXT_ALIGNMENT_CENTER);
         btnCalculate.setGravity(Gravity.CENTER); // Center the text in the button
 
 
         // Add a click listener for the button to process the inputs
         btnCalculate.setOnClickListener(v -> {
-            // Your CGPA calculation logic goes here
-            Toast.makeText(requireContext(), "Calculate CGPA button clicked", Toast.LENGTH_SHORT).show();
+            if (isInputValid()) {// Check if all inputs are valid
+                hideKeyboard(v);
+                calculate();
+                // If valid, perform the calculation
+            } else {
+            }
         });
+
 
         // Add the button to the container
         ll_subjects_container.addView(btnCalculate);
@@ -244,4 +286,147 @@ public class CalculatorFragment extends Fragment {
     private int convertDpToPx(int dp) {
         return Math.round(dp * (requireContext().getResources().getDisplayMetrics().xdpi / DisplayMetrics.DENSITY_DEFAULT));
     }
+
+    private boolean isInputValid() {
+        for (int i = 0; i < ll_subjects_container.getChildCount(); i++) {
+            View child = ll_subjects_container.getChildAt(i);
+            if (child instanceof LinearLayout) {
+                LinearLayout subjectLayout = (LinearLayout) child;
+                for (int j = 0; j < subjectLayout.getChildCount(); j++) {
+                    View inputView = subjectLayout.getChildAt(j);
+                    if (inputView instanceof EditText) {
+                        EditText editText = (EditText) inputView;
+
+                        // Check if the input is empty
+                        if (TextUtils.isEmpty(editText.getText().toString().trim())) {
+                            editText.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_round_corner));
+                            editText.requestFocus();
+                            return false; // Return false if any EditText is empty
+                        } else {
+                            editText.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edittext_backgrouond));
+                        }
+
+                        // Validate GP (should be 10 or less)
+                        if (editText.getTag().toString().startsWith("gp")) {
+                            try {
+                                float gpValue = Float.parseFloat(editText.getText().toString().trim());
+                                if (gpValue > 10) {
+                                    Toast.makeText(requireContext(), "GP should be 10 or less", Toast.LENGTH_SHORT).show();
+                                    editText.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_round_corner));
+                                    editText.requestFocus();
+                                    return false; // Return false if GP is more than 10
+                                }
+                            } catch (NumberFormatException e) {
+                                Toast.makeText(requireContext(), "Please enter a valid number for GP", Toast.LENGTH_SHORT).show();
+                                editText.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_round_corner));
+                                editText.requestFocus();
+                                return false; // Return false if GP input is not a number
+                            }
+                        }
+
+                        // Validate CR (should be 10 or less)
+                        if (editText.getTag().toString().startsWith("cr")) {
+                            try {
+                                int crValue = Integer.parseInt(editText.getText().toString().trim());
+                                if (crValue > 10) {
+                                    Toast.makeText(requireContext(), "CR should be 10 or less", Toast.LENGTH_SHORT).show();
+                                    editText.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_round_corner));
+                                    editText.requestFocus();
+                                    return false; // Return false if CR is more than 10
+                                }
+                            } catch (NumberFormatException e) {
+                                Toast.makeText(requireContext(), "Please enter a valid number for CR", Toast.LENGTH_SHORT).show();
+                                editText.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_round_corner));
+                                editText.requestFocus();
+                                return false; // Return false if CR input is not a number
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return true; // All inputs are valid
+    }
+
+
+    private void calculate() {
+        // Variables to hold the subject names, credit hours, and grade points
+        String[] subjectNames = new String[ll_subjects_container.getChildCount()];
+        int[] creditHours = new int[ll_subjects_container.getChildCount()];
+        float[] gradePoints = new float[ll_subjects_container.getChildCount()];
+
+        for (int i = 0; i < ll_subjects_container.getChildCount(); i++) {
+            View child = ll_subjects_container.getChildAt(i);
+            if (child instanceof LinearLayout) {
+                LinearLayout subjectLayout = (LinearLayout) child;
+                for (int j = 0; j < subjectLayout.getChildCount(); j++) {
+                    View inputView = subjectLayout.getChildAt(j);
+                    if (inputView instanceof EditText) {
+                        EditText editText = (EditText) inputView;
+                        if (j == 0) {
+                            subjectNames[i] = editText.getText().toString().trim(); // Store subject name
+                        } else if (j == 1) {
+                            creditHours[i] = Integer.parseInt(editText.getText().toString().trim()); // Store CR
+                        } else if (j == 2) {
+                            gradePoints[i] = Float.parseFloat(editText.getText().toString().trim()); // Store GP
+                        }
+                    }
+                }
+            }
+        }
+
+        // Now you can use subjectNames, creditHours, and gradePoints for your CGPA calculation logic
+        // For example:
+        float cgpa = calculateCGPA(creditHours, gradePoints);
+        Toast.makeText(requireContext(), "CGPA: " + cgpa , Toast.LENGTH_SHORT).show();
+
+    }
+    private float calculateCGPA(int[] creditHours, float[] gradePoints) {
+        int totalCreditHours = 0;
+        float totalGradePoints = 0;
+
+        for (int i = 0; i < creditHours.length; i++) {
+            totalCreditHours += creditHours[i];
+            totalGradePoints += creditHours[i] * gradePoints[i];
+        }
+
+
+        return totalCreditHours > 0 ? totalGradePoints / totalCreditHours : 0; // Avoid division by zero
+    }
+
+
+//    private void printSubjectDetails() {
+//        StringBuilder details = new StringBuilder("Subject Details:\n");
+//
+//        // Start checking from index 1 to skip the label row
+//        for (int i = 1; i < ll_subjects_container.getChildCount(); i++) {
+//            View view = ll_subjects_container.getChildAt(i);
+//
+//            // Check if the child is a LinearLayout (which contains EditTexts)
+//            if (view instanceof LinearLayout) {
+//                LinearLayout subjectDetailLayout = (LinearLayout) view;
+//
+//                // Get the EditTexts for Subject Name, CR, and GP
+//                String subjectName = ((EditText) subjectDetailLayout.getChildAt(0)).getText().toString().trim();
+//                String cr = ((EditText) subjectDetailLayout.getChildAt(1)).getText().toString().trim();
+//                String gp = ((EditText) subjectDetailLayout.getChildAt(2)).getText().toString().trim();
+//
+//                // Append the details to the StringBuilder
+//                details.append("Subject Name: ").append(subjectName)
+//                        .append(", CR: ").append(cr)
+//                        .append(", GP: ").append(gp).append("\n");
+//            }
+//        }
+//
+//        // Print the collected details using Snackbar
+//        View rootView = requireActivity().findViewById(android.R.id.content); // Get the root view
+//        Snackbar.make(rootView, details.toString(), Snackbar.LENGTH_LONG)
+//                .setAction("Action", null) // Optional action button
+//                .show(); // Show the Snackbar
+//    }
+
+
+
+
+
 }
