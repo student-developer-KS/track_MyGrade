@@ -50,7 +50,7 @@ dependencies {
     implementation(libs.lifecycle.viewmodel.ktx)
 
     // Firebase BoM
-    implementation(platform("com.google.firebase:firebase-bom:33.3.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.4.0"))
 
     // Firebase services
     implementation("com.google.firebase:firebase-auth")
@@ -62,6 +62,7 @@ dependencies {
     // Multidex support if enabled
     implementation("androidx.multidex:multidex:2.0.1")
     implementation(libs.material)
+    implementation(libs.firebase.analytics)
 
     // Material Design Components (if needed)
     // implementation("com.google.android.material:material:1.9.0")
@@ -70,6 +71,9 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
+    implementation ("androidx.appcompat:appcompat:1.6.1")
+    implementation ("androidx.fragment:fragment:1.5.5")
 }
 
 apply(plugin = "com.google.gms.google-services")

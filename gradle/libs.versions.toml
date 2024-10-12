@@ -14,6 +14,7 @@ lifecycleViewmodelKtx = "2.8.6"
 firebaseAuth = "23.0.0"
 firebaseFirestore = "25.1.0"
 googleGmsGoogleServices = "4.4.2"
+firebaseAnalytics = "22.1.0"
 
 [libraries]
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
@@ -29,6 +30,7 @@ lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-lived
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics", version.ref = "firebaseAnalytics" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -1,10 +1,143 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".CalculatorActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/gradient_bf"
+    android:orientation="vertical">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- Fragment Container to Load Fragments -->
+
+
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/gray"/>
+
+    <!-- Bottom Navigation Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="8dp"
+        android:weightSum="3">
+
+        <!-- Home Button -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:id="@+id/btn_profile"
+                android:layout_width="40dp"
+                android:layout_height="35dp"
+                android:src="@drawable/profile"
+                android:contentDescription="Home" />
+
+            <TextView
+                android:id="@+id/tv_profile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profile"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="@color/blue_600"
+                android:textAlignment="center"
+                android:gravity="center"/>
+
+            <View
+                android:id="@+id/v_profile"
+                android:layout_width="70dp"
+                android:layout_height="3dp"
+                android:background="@color/primary"
+                android:visibility="gone"/>
+        </LinearLayout>
+
+        <!-- CGPA Calculator Button -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:id="@+id/btn_calculator"
+                android:layout_width="40dp"
+                android:layout_height="30dp"
+                android:src="@drawable/calculator"
+                android:contentDescription="CGPA Calculator" />
+
+            <TextView
+                android:id="@+id/tv_cgpa"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CGPA Calculator"
+                android:textColor="@color/purple_500"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textAlignment="center"
+                android:gravity="center"/>
+
+            <!-- Line below selected button -->
+            <View
+                android:id="@+id/v_cgpa"
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:background="@color/primary"/>
+        </LinearLayout>
+
+        <!-- Profile Button -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:id="@+id/btn_graph"
+                android:layout_width="40dp"
+                android:layout_height="30dp"
+                android:src="@drawable/graph"
+                android:contentDescription="Profile" />
+
+            <TextView
+                android:id="@+id/tv_graph"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Graph"
+                android:textColor="@color/blue_600"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textAlignment="center"
+                android:gravity="center"/>
+
+            <View
+                android:id="@+id/v_graph"
+                android:layout_width="70dp"
+                android:layout_height="3dp"
+                android:background="@color/primary"
+                android:visibility="gone"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
