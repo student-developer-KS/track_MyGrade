@@ -42,8 +42,8 @@
             <ImageView
                 android:id="@+id/btn_profile"
                 android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/baseline_person_24"
+                android:layout_height="35dp"
+                android:src="@drawable/profile"
                 android:contentDescription="Home" />
 
             <TextView
@@ -78,8 +78,8 @@
             <ImageView
                 android:id="@+id/btn_calculator"
                 android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/ic_calculator"
+                android:layout_height="30dp"
+                android:src="@drawable/calculator"
                 android:contentDescription="CGPA Calculator" />
 
             <TextView
@@ -114,8 +114,8 @@
             <ImageView
                 android:id="@+id/btn_graph"
                 android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/ic_graph"
+                android:layout_height="30dp"
+                android:src="@drawable/graph"
                 android:contentDescription="Profile" />
 
             <TextView

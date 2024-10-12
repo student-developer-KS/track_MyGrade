@@ -3,6 +3,7 @@ package com.student_developer.track_my_grade;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.text.InputType;
@@ -24,19 +25,38 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.DocumentReference;
+
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class CalculatorFragment extends Fragment {
 
     // Existing member variables
-    EditText etNoOfSubs;
-    Button btnGenerateSubs;
+
+    private FirebaseFirestore firestore;
+    TextView tv_gpa_result, tvGpa;
+    EditText etNoOfSubs, etsvToSem, etConfirmRoll;
+    String rollno;
+    Button btnGenerateSubs, btnsvToPro, btnsvToSem, btnConfirmRoll;
     LinearLayout ll_no_of_sub;
     ScrollView sv_containers;
-    LinearLayout ll_subjects_container; // New container for subject marks
+    LinearLayout ll_subjects_container;
+    LinearLayout ll_results;
+    LinearLayout ll_SvSem;
+    LinearLayout llconfirmRoll;// New container for subject marks
+
+    float gpa;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_calculator, container, false);
+
 
         if (getActivity() != null) {
             // Accessing TextViews and Views in the activity layout
@@ -72,6 +92,7 @@ public class CalculatorFragment extends Fragment {
 
 
         // Initialize UI components
+        tv_gpa_result = view.findViewById(R.id.tv_gpa_res);
         etNoOfSubs = view.findViewById(R.id.et_no_of_subjects);
         etNoOfSubs.requestFocus();
         btnGenerateSubs = view.findViewById(R.id.btn_generate_subjects);
@@ -79,7 +100,103 @@ public class CalculatorFragment extends Fragment {
         ll_subjects_container = view.findViewById(R.id.ll_subjects_container);
         ll_subjects_container.setVisibility(View.GONE);
         sv_containers = view.findViewById(R.id.sv_container);
+        ll_results = view.findViewById(R.id.ll_result);
+        ll_SvSem = view.findViewById(R.id.ll_sv_sem);
+        btnsvToPro = view.findViewById(R.id.btn_svToPro);
+        btnsvToSem = view.findViewById(R.id.btn_svToSem);
+        etsvToSem = view.findViewById(R.id.et_svToSem);
+        llconfirmRoll = view.findViewById(R.id.ll_confirm_roll);
+        llconfirmRoll.setVisibility(View.GONE);
+        etConfirmRoll = view.findViewById(R.id.et_confirmRoll);
+        btnConfirmRoll = view.findViewById(R.id.btn_confirmRoll);
+        tvGpa = view.findViewById(R.id.tv_gpa);
 
+        btnConfirmRoll.setOnClickListener((View v) -> {
+            hideKeyboard(v);
+            rollno = etConfirmRoll.getText().toString().trim();
+
+            if (TextUtils.isEmpty(rollno )) {
+                etConfirmRoll.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_round_corner));
+                etConfirmRoll.requestFocus();
+            } else if(rollno.length()<7 ||rollno.length()>9 ){
+                etConfirmRoll.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_round_corner));
+                etConfirmRoll.requestFocus();
+            }else {
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
+                // Check if a document with the roll number exists in the 'Users' collection
+                db.collection("Users")
+                        .whereEqualTo("Roll No", rollno.toUpperCase())
+                        .get()
+                        .addOnCompleteListener(rollNoTask -> {
+                            if (rollNoTask.isSuccessful() && rollNoTask.getResult() != null) {
+                                if (!rollNoTask.getResult().isEmpty()) {
+                                    // Document exists, now check the Roll No field
+                                    DocumentSnapshot documentSnapshot = rollNoTask.getResult().getDocuments().get(0);
+                                    String firestoreRollNo = ((DocumentSnapshot) documentSnapshot).getString("Roll No");
+                                    if (firestoreRollNo != null && firestoreRollNo.equals(rollno.toUpperCase())) {
+                                        // Hide the roll input and show the semester save layout
+                                        llconfirmRoll.setVisibility(View.GONE);
+                                        tvGpa.setText("CGPA RESULT (" + rollno.toUpperCase() + ")");
+                                        ll_SvSem.setVisibility(View.VISIBLE);
+                                    } else {
+                                        // If the 'Roll No' doesn't match
+                                        etConfirmRoll.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_round_corner));
+                                        Toast.makeText(requireContext(), "Roll No does not match", Toast.LENGTH_SHORT).show();
+                                    }
+                                } else {
+                                    // If no document with that Roll No exists
+                                    etConfirmRoll.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_round_corner));
+                                    etConfirmRoll.setError("Authendication Failed, Enter your Roll No to Proceed.");
+                                }
+                            } else {
+                                // Task was not successful
+                                Toast.makeText(requireContext(), "Error Confirming Roll No", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .addOnFailureListener(e -> {
+                            // Handle any failures (e.g., network error)
+                            Toast.makeText(requireContext(), "Error Confirming Roll No", Toast.LENGTH_SHORT).show();
+                        });
+            }
+        });
+
+
+        btnsvToSem.setOnClickListener((View v) -> {
+            hideKeyboard(v);
+
+            // Check if the EditText is empty
+            String semesterInput = etsvToSem.getText().toString().trim();
+            if (TextUtils.isEmpty(semesterInput)) {
+                etsvToSem.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_round_corner));
+                etsvToSem.requestFocus();
+
+            } else {
+                // Now, you can safely parse the input to an integer
+                int saveToSem = Integer.parseInt(semesterInput);
+
+                // Check if the semester number is within a valid range
+                if (saveToSem > 0 && saveToSem <= 8) {
+                    etsvToSem.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edittext_backgrouond));
+                    Toast.makeText(requireContext(), "Your GPA : " + String.format("%.2f", gpa) + " is saved in Semester " + saveToSem, Toast.LENGTH_SHORT).show();
+//                    ll_SvSem.setVisibility(View.GONE);
+                    saveGpa(saveToSem, gpa, rollno);
+                    tv_gpa_result.setText("  Your GPA is : " + String.format("%.2f", gpa) + " for Sem "+saveToSem);
+                } else {
+                    etsvToSem.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_round_corner));
+                    etsvToSem.requestFocus();
+                    Toast.makeText(requireContext(), "Please enter a semester number between 1 and 8", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+
+        btnsvToPro.setOnClickListener(v -> {
+            hideKeyboard(v);
+            ll_subjects_container.setVisibility(View.GONE);
+            btnsvToPro.setVisibility(View.GONE);
+            ll_SvSem.setVisibility(View.GONE);
+            llconfirmRoll.setVisibility(View.VISIBLE);
+        });
         btnGenerateSubs.setOnClickListener(v -> {
             hideKeyboard(v);
             String noOfSubjects = etNoOfSubs.getText().toString().trim();
@@ -101,6 +218,7 @@ public class CalculatorFragment extends Fragment {
                 // Remove any previously generated views
                 ll_subjects_container.removeAllViews();
                 ll_no_of_sub.setVisibility(View.GONE);
+                ll_results.setVisibility(View.GONE);
                 ll_subjects_container.setVisibility(View.VISIBLE);
                 sv_containers.setVisibility(View.VISIBLE);
 
@@ -267,7 +385,6 @@ public class CalculatorFragment extends Fragment {
                 hideKeyboard(v);
                 calculate();
                 // If valid, perform the calculation
-            } else {
             }
         });
 
@@ -377,10 +494,14 @@ public class CalculatorFragment extends Fragment {
 
         // Now you can use subjectNames, creditHours, and gradePoints for your CGPA calculation logic
         // For example:
-        float cgpa = calculateCGPA(creditHours, gradePoints);
-        Toast.makeText(requireContext(), "CGPA: " + cgpa , Toast.LENGTH_SHORT).show();
+        ll_subjects_container.setVisibility(View.GONE);
+        ll_results.setVisibility(View.VISIBLE);
+        gpa = calculateCGPA(creditHours, gradePoints);
+        gpa = Float.parseFloat(String.format("%.2f", gpa));
+        tv_gpa_result.setText("  Your GPA is : " + String.format("%.2f", gpa));
 
     }
+
     private float calculateCGPA(int[] creditHours, float[] gradePoints) {
         int totalCreditHours = 0;
         float totalGradePoints = 0;
@@ -389,44 +510,53 @@ public class CalculatorFragment extends Fragment {
             totalCreditHours += creditHours[i];
             totalGradePoints += creditHours[i] * gradePoints[i];
         }
-
-
         return totalCreditHours > 0 ? totalGradePoints / totalCreditHours : 0; // Avoid division by zero
     }
 
 
-//    private void printSubjectDetails() {
-//        StringBuilder details = new StringBuilder("Subject Details:\n");
-//
-//        // Start checking from index 1 to skip the label row
-//        for (int i = 1; i < ll_subjects_container.getChildCount(); i++) {
-//            View view = ll_subjects_container.getChildAt(i);
-//
-//            // Check if the child is a LinearLayout (which contains EditTexts)
-//            if (view instanceof LinearLayout) {
-//                LinearLayout subjectDetailLayout = (LinearLayout) view;
-//
-//                // Get the EditTexts for Subject Name, CR, and GP
-//                String subjectName = ((EditText) subjectDetailLayout.getChildAt(0)).getText().toString().trim();
-//                String cr = ((EditText) subjectDetailLayout.getChildAt(1)).getText().toString().trim();
-//                String gp = ((EditText) subjectDetailLayout.getChildAt(2)).getText().toString().trim();
-//
-//                // Append the details to the StringBuilder
-//                details.append("Subject Name: ").append(subjectName)
-//                        .append(", CR: ").append(cr)
-//                        .append(", GP: ").append(gp).append("\n");
-//            }
-//        }
-//
-//        // Print the collected details using Snackbar
-//        View rootView = requireActivity().findViewById(android.R.id.content); // Get the root view
-//        Snackbar.make(rootView, details.toString(), Snackbar.LENGTH_LONG)
-//                .setAction("Action", null) // Optional action button
-//                .show(); // Show the Snackbar
-//    }
+    private void saveGpa(int sem, float gpa, String rollno) {
+        ll_SvSem.setVisibility(View.GONE);
 
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("Sem "+ sem, gpa);
 
+        // Reference to the GPA document
+        DocumentReference docRef = db.collection("GPA").document(rollno);
 
+        // Fetch the document to check if the semester field exists
+        docRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()) {
+                    // Check if the semester (sem) already exists in the document
+                    if (document.contains(String.valueOf(sem))) {
+                        // Semester exists, update the GPA value
+                        docRef.update(userData)
+                                .addOnSuccessListener(aVoid -> Toast.makeText(requireContext(), "GPA updated successfully", Toast.LENGTH_SHORT).show())
+                                .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to update GPA", Toast.LENGTH_SHORT).show());
+                    } else {
+                        // Semester does not exist, add a new field for the semester
+                        docRef.update(userData)
+                                .addOnSuccessListener(aVoid -> Toast.makeText(requireContext(), "New semester GPA added successfully", Toast.LENGTH_SHORT).show())
+                                .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to add new semester GPA", Toast.LENGTH_SHORT).show());
+                    }
+                } else {
+                    // Document doesn't exist, create a new document with the semester and GPA
+                    docRef.set(userData)
+                            .addOnSuccessListener(aVoid -> Toast.makeText(requireContext(), "GPA saved successfully for new document", Toast.LENGTH_SHORT).show())
+                            .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to save GPA", Toast.LENGTH_SHORT).show());
+                }
+            } else {
+                Toast.makeText(requireContext(), "Failed to check document", Toast.LENGTH_SHORT).show();
+            }
+        }).addOnFailureListener(e -> {
+            Toast.makeText(requireContext(), "Error fetching document", Toast.LENGTH_SHORT).show();
+        });
+    }
 
 
 }
+
+
+
