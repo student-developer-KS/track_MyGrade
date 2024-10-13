@@ -32,6 +32,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.DocumentReference;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -514,37 +515,33 @@ public class CalculatorFragment extends Fragment {
         }
         return totalCreditHours > 0 ? totalGradePoints / totalCreditHours : 0; // Avoid division by zero
     }
-
-    private void saveGpa(int sem, float gpa, String rollnoInput) {
-        ll_SvSem.setVisibility(View.GONE);
-        rollnoInput = rollnoInput.toUpperCase();  // User input roll number
+    private void saveGpa(int sem, float gpa, String rollnoInput){
+        ll_SvSem.setVisibility(View.GONE);  // Hide the layout
+        rollnoInput = rollnoInput.toUpperCase();  // Normalize roll number input
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         // Reference to the user document using the roll number input
         DocumentReference userRef = db.collection("Users").document(rollnoInput);
 
-        // Fetch the current user's roll number from Firestore
+        Log.d("DEBUG", "User Input Roll No: " + rollnoInput);
+
         String finalRollnoInput = rollnoInput;
-
-        Log.d("DEBUG", "User Input Roll No: " + finalRollnoInput);
-
         userRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
                 String rollNoFromDb = documentSnapshot.getString("Roll No");
-                Log.d("DEBUG", "Roll No from DB: " + rollNoFromDb);
 
                 // Validation: Check if the input roll number matches the current user's roll number
                 if (!finalRollnoInput.equals(rollNoFromDb)) {
                     Toast.makeText(requireContext(), "You can only save GPA for your own roll number.", Toast.LENGTH_SHORT).show();
-                    return;
+                    return;  // Exit if the roll numbers do not match
                 }
 
                 // Proceed with saving GPA if validation passes
                 Map<String, Object> userData = new HashMap<>();
-                userData.put("Sem " + sem, gpa);
+                userData.put("Sem " + sem, gpa);  // Store GPA for the specified semester
 
-                // Reference to the GPA document
+                // Reference to the GPA document using the entered roll number
                 DocumentReference docRef = db.collection("GPA").document(finalRollnoInput);
 
                 // Fetch the document to check if the semester field exists
@@ -554,13 +551,13 @@ public class CalculatorFragment extends Fragment {
                         if (document.exists()) {
                             // Check if the semester already exists in the document
                             if (document.contains("Sem " + sem)) {
-                                // Semester exists, update the GPA value
+                                // Update the existing GPA value
                                 docRef.update(userData)
                                         .addOnSuccessListener(aVoid -> Toast.makeText(requireContext(), "GPA updated successfully", Toast.LENGTH_SHORT).show())
                                         .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to update GPA", Toast.LENGTH_SHORT).show());
                             } else {
-                                // Semester does not exist, add a new field for the semester
-                                docRef.update(userData)
+                                // Add a new field for the semester
+                                docRef.set(userData, SetOptions.merge())  // Safer way to add new fields
                                         .addOnSuccessListener(aVoid -> Toast.makeText(requireContext(), "New semester GPA added successfully", Toast.LENGTH_SHORT).show())
                                         .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to add new semester GPA", Toast.LENGTH_SHORT).show());
                             }
@@ -585,8 +582,6 @@ public class CalculatorFragment extends Fragment {
             Log.e("ERROR", "Error fetching user data", e);  // Log the exception
         });
     }
-
-
 
 
 }
