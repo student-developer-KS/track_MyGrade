@@ -3,6 +3,7 @@ package com.student_developer.track_my_grade;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.MeshSpecification;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -29,6 +30,8 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -43,7 +46,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String ERROR_LOGIN_FAILED = "Login failed. Please try again.";
     private static final String ERROR_USER_NOT_REGISTERED = "This email address is not registered.";
     private static final String ERROR_INVALID_PASSWORD = "Invalid email Id or Password. Please try again.";
-
+    private static String rollNO;
     private EditText etEmail, etPassword;
     private ProgressBar progressBar;
     private Button btnSubmitLogin, btnMvToLogin;
@@ -123,24 +126,52 @@ public class LoginActivity extends AppCompatActivity {
     private void handleLoginResponse(Task<AuthResult> task) {
         showProgressBar(false);
         if (task.isSuccessful()) {
+            FirebaseUser firebaseUser = authLogin.getCurrentUser();
 
+            if (firebaseUser.isEmailVerified()) {
+                // Fetch the Roll No from Firestore
+                String email = firebaseUser.getEmail();
+                FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-            FirebaseUser firebaseuser = authLogin.getCurrentUser();
-            if(firebaseuser.isEmailVerified()){
+                db.collection("Users")
+                        .whereEqualTo("Email", email)
+                        .get()
+                        .addOnCompleteListener(queryTask -> {
+                            if (queryTask.isSuccessful() && !queryTask.getResult().isEmpty()) {
+                                DocumentSnapshot document = queryTask.getResult().getDocuments().get(0);
+                                String rollNo = document.getString("Roll No");
 
-                navigateTo(CalculatorActivity.class);
-                showToast("Login successful!");
+                                if (rollNo != null) {
+                                    // Save Roll No to SharedPreferences
+                                    SharedPreferences sharedPref = getSharedPreferences("UserPref", Context.MODE_PRIVATE);
+                                    SharedPreferences.Editor editor = sharedPref.edit();
+                                    editor.putString("roll_no", rollNo);
+                                    editor.apply();
 
-            }else{
-                firebaseuser.sendEmailVerification();
+                                    // Now navigate to CalculatorActivity
+                                    navigateTo(CalculatorActivity.class);
+                                } else {
+                                    showToast("Roll No not found.");
+                                }
+                            } else {
+                                showToast("Failed to fetch Roll No.");
+                            }
+                        })
+                        .addOnFailureListener(e -> {
+                            Log.e("LoginActivity", "Error fetching Roll No: ", e);
+                            showToast("Error fetching Roll No.");
+                        });
+            } else {
+                firebaseUser.sendEmailVerification();
                 authLogin.signOut();
                 showAlertDialog();
             }
-
         } else {
             handleLoginError(task);
         }
     }
+
+
 
     private void showAlertDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
@@ -277,14 +308,25 @@ public class LoginActivity extends AppCompatActivity {
 
 
     @Override
-    protected void onStart(){
+    protected void onStart() {
         super.onStart();
-        if(authLogin.getCurrentUser()!=null){
-            Snackbar.make(LoginActivity.this.getCurrentFocus(),"Already Logged In!", Snackbar.LENGTH_SHORT).show();
-            navigateTo(CalculatorActivity.class);
-            finish();
-        }else{
+        if (authLogin.getCurrentUser() != null) {
+            SharedPreferences sharedPref = getSharedPreferences("UserPref", Context.MODE_PRIVATE);
+            String rollNo = sharedPref.getString("roll_no", null);
+
+            if (rollNo != null) {
+                Snackbar.make(LoginActivity.this.getCurrentFocus(),"Already Logged In! Roll No: " + rollNo, Snackbar.LENGTH_SHORT).show();
+                LoginActivity.rollNO = rollNo; // Save it to the static variable for future use
+
+                // Now navigate to CalculatorActivity
+                navigateTo(CalculatorActivity.class);
+                finish();
+            } else {
+                Snackbar.make(LoginActivity.this.getCurrentFocus(),"Roll No not found!", Snackbar.LENGTH_SHORT).show();
+            }
+        } else {
             Snackbar.make(LoginActivity.this.getCurrentFocus(),"You Can Login Now!", Snackbar.LENGTH_SHORT).show();
         }
     }
+
 }
