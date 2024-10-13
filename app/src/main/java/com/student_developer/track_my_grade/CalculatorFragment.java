@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,6 +58,7 @@ public class CalculatorFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_calculator, container, false);
 
+        FirebaseFirestore.setLoggingEnabled(true);
 
         if (getActivity() != null) {
             // Accessing TextViews and Views in the activity layout
@@ -132,7 +134,7 @@ public class CalculatorFragment extends Fragment {
                                 if (!rollNoTask.getResult().isEmpty()) {
                                     // Document exists, now check the Roll No field
                                     DocumentSnapshot documentSnapshot = rollNoTask.getResult().getDocuments().get(0);
-                                    String firestoreRollNo = ((DocumentSnapshot) documentSnapshot).getString("Roll No");
+                                    String firestoreRollNo = documentSnapshot.getString("Roll No");
                                     if (firestoreRollNo != null && firestoreRollNo.equals(rollno.toUpperCase())) {
                                         // Hide the roll input and show the semester save layout
                                         llconfirmRoll.setVisibility(View.GONE);
@@ -177,10 +179,10 @@ public class CalculatorFragment extends Fragment {
                 // Check if the semester number is within a valid range
                 if (saveToSem > 0 && saveToSem <= 8) {
                     etsvToSem.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edittext_backgrouond));
-                    Toast.makeText(requireContext(), "Your GPA : " + String.format("%.2f", gpa) + " is saved in Semester " + saveToSem, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(requireContext(), "Your GPA : " + String.format("%.2f", gpa) + " is saved in Semester " + saveToSem, Toast.LENGTH_SHORT).show();
 //                    ll_SvSem.setVisibility(View.GONE);
                     saveGpa(saveToSem, gpa, rollno);
-                    tv_gpa_result.setText("  Your GPA is : " + String.format("%.2f", gpa) + " for Sem "+saveToSem);
+                    tv_gpa_result.setText("  Your GPA is : " + String.format("%.2f", gpa) + " for Sem "+saveToSem+ " saved succesfully.");
                 } else {
                     etsvToSem.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_round_corner));
                     etsvToSem.requestFocus();
@@ -513,47 +515,78 @@ public class CalculatorFragment extends Fragment {
         return totalCreditHours > 0 ? totalGradePoints / totalCreditHours : 0; // Avoid division by zero
     }
 
-
-    private void saveGpa(int sem, float gpa, String rollno) {
+    private void saveGpa(int sem, float gpa, String rollnoInput) {
         ll_SvSem.setVisibility(View.GONE);
+        rollnoInput = rollnoInput.toUpperCase();  // User input roll number
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("Sem "+ sem, gpa);
 
-        // Reference to the GPA document
-        DocumentReference docRef = db.collection("GPA").document(rollno);
+        // Reference to the user document using the roll number input
+        DocumentReference userRef = db.collection("Users").document(rollnoInput);
 
-        // Fetch the document to check if the semester field exists
-        docRef.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                DocumentSnapshot document = task.getResult();
-                if (document.exists()) {
-                    // Check if the semester (sem) already exists in the document
-                    if (document.contains(String.valueOf(sem))) {
-                        // Semester exists, update the GPA value
-                        docRef.update(userData)
-                                .addOnSuccessListener(aVoid -> Toast.makeText(requireContext(), "GPA updated successfully", Toast.LENGTH_SHORT).show())
-                                .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to update GPA", Toast.LENGTH_SHORT).show());
-                    } else {
-                        // Semester does not exist, add a new field for the semester
-                        docRef.update(userData)
-                                .addOnSuccessListener(aVoid -> Toast.makeText(requireContext(), "New semester GPA added successfully", Toast.LENGTH_SHORT).show())
-                                .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to add new semester GPA", Toast.LENGTH_SHORT).show());
-                    }
-                } else {
-                    // Document doesn't exist, create a new document with the semester and GPA
-                    docRef.set(userData)
-                            .addOnSuccessListener(aVoid -> Toast.makeText(requireContext(), "GPA saved successfully for new document", Toast.LENGTH_SHORT).show())
-                            .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to save GPA", Toast.LENGTH_SHORT).show());
+        // Fetch the current user's roll number from Firestore
+        String finalRollnoInput = rollnoInput;
+
+        Log.d("DEBUG", "User Input Roll No: " + finalRollnoInput);
+
+        userRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                String rollNoFromDb = documentSnapshot.getString("Roll No");
+                Log.d("DEBUG", "Roll No from DB: " + rollNoFromDb);
+
+                // Validation: Check if the input roll number matches the current user's roll number
+                if (!finalRollnoInput.equals(rollNoFromDb)) {
+                    Toast.makeText(requireContext(), "You can only save GPA for your own roll number.", Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                // Proceed with saving GPA if validation passes
+                Map<String, Object> userData = new HashMap<>();
+                userData.put("Sem " + sem, gpa);
+
+                // Reference to the GPA document
+                DocumentReference docRef = db.collection("GPA").document(finalRollnoInput);
+
+                // Fetch the document to check if the semester field exists
+                docRef.get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document.exists()) {
+                            // Check if the semester already exists in the document
+                            if (document.contains("Sem " + sem)) {
+                                // Semester exists, update the GPA value
+                                docRef.update(userData)
+                                        .addOnSuccessListener(aVoid -> Toast.makeText(requireContext(), "GPA updated successfully", Toast.LENGTH_SHORT).show())
+                                        .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to update GPA", Toast.LENGTH_SHORT).show());
+                            } else {
+                                // Semester does not exist, add a new field for the semester
+                                docRef.update(userData)
+                                        .addOnSuccessListener(aVoid -> Toast.makeText(requireContext(), "New semester GPA added successfully", Toast.LENGTH_SHORT).show())
+                                        .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to add new semester GPA", Toast.LENGTH_SHORT).show());
+                            }
+                        } else {
+                            // Document doesn't exist, create a new document with the semester and GPA
+                            docRef.set(userData)
+                                    .addOnSuccessListener(aVoid -> Toast.makeText(requireContext(), "GPA saved successfully for new document", Toast.LENGTH_SHORT).show())
+                                    .addOnFailureListener(e -> Toast.makeText(requireContext(), "Failed to save GPA", Toast.LENGTH_SHORT).show());
+                        }
+                    } else {
+                        Toast.makeText(requireContext(), "Failed to check GPA document", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnFailureListener(e -> {
+                    Toast.makeText(requireContext(), "Error fetching GPA document", Toast.LENGTH_SHORT).show();
+                    Log.e("ERROR", "Error fetching GPA document", e);  // Log the exception
+                });
             } else {
-                Toast.makeText(requireContext(), "Failed to check document", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "Error fetching user data: Document does not exist", Toast.LENGTH_SHORT).show();
             }
         }).addOnFailureListener(e -> {
-            Toast.makeText(requireContext(), "Error fetching document", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "Error fetching user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e("ERROR", "Error fetching user data", e);  // Log the exception
         });
     }
+
+
 
 
 }
