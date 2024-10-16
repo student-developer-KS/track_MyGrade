@@ -8,7 +8,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
     private FirebaseAnalytics mFirebaseAnalytics;
     TextView tv1;
 
@@ -28,5 +28,10 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(MainActivity.this, LoginActivity.class));
             finish();
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        showExitConfirmationDialog(); // Call the method to show the dialog
     }
 }

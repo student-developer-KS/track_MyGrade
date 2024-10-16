@@ -1,16 +1,22 @@
 package com.student_developer.track_my_grade;
 
+import static android.app.PendingIntent.getActivity;
+
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-public class CalculatorActivity extends AppCompatActivity {
+public class CalculatorActivity extends BaseActivity {
+
+    private boolean isProfileLoading = false;
+    ImageView btnProfile,btnCalculator,btnGraph;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,27 +26,35 @@ public class CalculatorActivity extends AppCompatActivity {
         loadFragment(new CalculatorFragment());
 
         // Find the buttons in the layout
-        ImageView btnProfile = findViewById(R.id.btn_profile);
-        ImageView btnCalculator = findViewById(R.id.btn_calculator);
-        ImageView btnGraph = findViewById(R.id.btn_graph);
+        btnProfile = findViewById(R.id.btn_profile);
+        btnCalculator = findViewById(R.id.btn_calculator);
+        btnGraph = findViewById(R.id.btn_graph);
 
-        // Set onClickListeners for each button
+        // Disable buttons while loading profile data
+        btnProfile.setEnabled(!isProfileLoading);
+        btnCalculator.setEnabled(!isProfileLoading);
+        btnGraph.setEnabled(!isProfileLoading);
+
+
         btnProfile.setOnClickListener(v -> {
-            // Load the Home Fragment when Home button is clicked
-            loadFragment(new ProfileFragment());
+            if (!isProfileLoading) {
+                loadFragment(new ProfileFragment());
+            }
         });
 
         btnCalculator.setOnClickListener(v -> {
-            // Load the CGPA Calculator Fragment when CGPA Calculator button is clicked
-            loadFragment(new CalculatorFragment());
+            if (!isProfileLoading) {
+                loadFragment(new CalculatorFragment());
+            }
         });
 
         btnGraph.setOnClickListener(v -> {
-            // Load the Profile Fragment when Profile button is clicked
-            loadFragment(new GraphFragment());
+            if (!isProfileLoading) {
+                loadFragment(new GraphFragment());
+            }
         });
-    }
 
+    }
     // Method to load fragments into the FrameLayout
     private void loadFragment(Fragment fragment) {
         if (fragment != null) {
@@ -54,4 +68,23 @@ public class CalculatorActivity extends AppCompatActivity {
             fragmentTransaction.commit();
         }
     }
+
+    public void setProfileLoading(boolean loading) {
+        isProfileLoading = loading;
+        ImageView btnProfile = findViewById(R.id.btn_profile);
+        ImageView btnCalculator = findViewById(R.id.btn_calculator);
+        ImageView btnGraph = findViewById(R.id.btn_graph);
+
+        btnProfile.setEnabled(!loading);
+        btnCalculator.setEnabled(!loading);
+        btnGraph.setEnabled(!loading);
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        showExitConfirmationDialog(); // Call the method to show the dialog
+    }
+
 }
+

@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends BaseActivity {
 
     // Constants
     private static final int MIN_PASSWORD_LENGTH = 8;
@@ -71,7 +71,7 @@ public class RegisterActivity extends AppCompatActivity {
         // Initialize Firebase Auth and Firestore
         mAuth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
-
+        showToast("You Can Register Now");
         initUI();
         etRollNo.requestFocus();
         setupListeners();
@@ -171,7 +171,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 });
                     } else {
                         showProgressBar(false);
-                        Toast.makeText(RegisterActivity.this, "Email Already Exists", Toast.LENGTH_SHORT).show();
+                        showToast("Email Already Exists");
                         etEmail.getText().clear();
                     }
                 });
@@ -193,7 +193,7 @@ public class RegisterActivity extends AppCompatActivity {
                                         onSuccess.run();
                                     } else {
                                         showProgressBar(false);
-                                        Toast.makeText(RegisterActivity.this, "Roll Number Already Exists", Toast.LENGTH_SHORT).show();
+                                        showToast("Roll Number Already Exists");
                                         etRollNo.getText().clear();
                                         etRollNo.requestFocus();
                                         etRollNo.setBackground(ContextCompat.getDrawable(this, R.drawable.edit_text_round_corner));
@@ -201,7 +201,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 });
                     } else {
                         showProgressBar(false);
-                        Toast.makeText(RegisterActivity.this, "Email Already Exists", Toast.LENGTH_SHORT).show();
+                        showToast("Email Already Exists");
                         etEmail.getText().clear();
                         etEmail.requestFocus();
                         etEmail.setBackground(ContextCompat.getDrawable(this, R.drawable.edit_text_round_corner));
@@ -219,11 +219,11 @@ public class RegisterActivity extends AppCompatActivity {
         db.collection("Users").document(rollNo.toUpperCase())
                 .set(userData)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(RegisterActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
+                    showToast("Registration successful");
                     clearInputFields();
                     startActivity(new Intent(RegisterActivity.this,LoginActivity.class));
                 })
-                .addOnFailureListener(e -> Toast.makeText(RegisterActivity.this, "Registration failed", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> showToast("Registration failed"));
     }
    private void hideKeyboard(View view) {
         InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -282,9 +282,9 @@ public class RegisterActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     showProgressBar(false);
                     if (task.isSuccessful()) {
-                        Toast.makeText(RegisterActivity.this, "Verification email sent", Toast.LENGTH_SHORT).show();
+                        showToast("Verification email sent");
                     } else {
-                        Toast.makeText(RegisterActivity.this, "Failed to send verification email", Toast.LENGTH_SHORT).show();
+                        showToast("Failed to send verification email");
                     }
                 });
     }
@@ -347,7 +347,15 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void showSnackbar(String string) {
-        Snackbar.make(findViewById(android.R.id.content), string, Snackbar.LENGTH_SHORT).show();}
+        Snackbar.make(findViewById(android.R.id.content), string, Snackbar.LENGTH_SHORT).show();
+    }
 
+    // Override the onBackPressed method to show the exit dialog
+    @Override
+    public void onBackPressed() {
+
+        showExitConfirmationDialog(); // Call the method to show the dialog
+    }
 }
+
 

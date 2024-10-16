@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Custom ProgressBar Style -->
+    <style name="CustomProgressBar" parent="Theme.AppCompat.Light">
+        <item name="colorAccent">@color/blue_600</item> <!-- Replace with your color -->
+    </style>
+</resources>

@@ -47,6 +47,7 @@
             android:layout_gravity="center"
             android:padding="12dp"
             android:textColor="@color/white"
+            android:backgroundTint="@color/blue_600"
             android:layout_marginTop="20dp"
             android:text="Save to Profile" />
 
@@ -101,10 +102,10 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="NOTE : Enter yours own Roll No."
-        android:textColor="@color/red"
+        android:text=" * NOTE : Enter yours own Roll No."
+        android:textColor="#F40404"
         android:textSize="14sp"
-        android:textStyle="italic"
+        android:textStyle="normal"
         android:layout_marginTop="10dp"
         android:layout_gravity="start"/>
 </LinearLayout>
@@ -171,9 +172,9 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Note: You can change your Semester GPA whenever you want."
-            android:textColor="@color/red"
-            android:textStyle="italic"
+            android:text=" * Note: You can change your Semester GPA whenever you want."
+            android:textColor="#F40404"
+            android:textStyle="normal"
             android:textSize="14sp"
             android:layout_marginTop="12dp" />
     </LinearLayout>
@@ -236,9 +237,9 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Note: Enter only the number of subjects you CLEARED."
-            android:textColor="@color/red"
-            android:textStyle="italic"
+            android:text=" * Note: Enter only the number of subjects you CLEARED."
+            android:textColor="#F40404"
+            android:textStyle="normal"
             android:textSize="14sp"
             android:layout_marginTop="12dp"
             android:layout_gravity="center" />

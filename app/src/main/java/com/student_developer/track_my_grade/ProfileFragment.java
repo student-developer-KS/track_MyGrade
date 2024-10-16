@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -34,6 +35,7 @@ public class ProfileFragment extends Fragment {
     TextView tvpro1,tvpro2,tvpro3,tvpro4,tvpro5,tvpro6,tvpro7,tvpro8,tvCGPATotal;
     Button btnLogOut;
     private FirebaseFirestore db;
+    public static ProgressBar progressBar;
 
 
     @Override
@@ -45,6 +47,12 @@ public class ProfileFragment extends Fragment {
 
         SharedPreferences sharedPref = getActivity().getSharedPreferences("UserPref", Context.MODE_PRIVATE);
         String rollNO = sharedPref.getString("roll_no", null);
+
+        progressBar = view.findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.VISIBLE);
+
+        // Notify activity that profile is loading
+        ((CalculatorActivity) getActivity()).setProfileLoading(true);
 
         btnLogOut =view.findViewById(R.id.btn_logOut);
         db = FirebaseFirestore.getInstance();
@@ -61,8 +69,11 @@ public class ProfileFragment extends Fragment {
         tvpro8 = view.findViewById((R.id.tv_pro8));
         tvCGPATotal = view.findViewById((R.id.tvCgpaTotal));
 
+
         // Assuming you have already initialized your TextViews
         TextView[] textViews = {tvpro1, tvpro2, tvpro3, tvpro4, tvpro5, tvpro6, tvpro7, tvpro8};
+
+        setButtonsEnabled(false);
 
         for (TextView textView : textViews) {
             textView.setOnClickListener(view1 -> navigateToCalculatorFragment());
@@ -113,6 +124,7 @@ public class ProfileFragment extends Fragment {
                 vGraph.setVisibility(View.GONE); // Hide graph view
             }
         }
+
 
 
 // Retrieve the document
@@ -186,14 +198,23 @@ public class ProfileFragment extends Fragment {
                 } else {
                     tvCGPATotal.setText("N/A");
                 }
+                progressBar.setVisibility(View.GONE);
+                setButtonsEnabled(true); // Notify activity that loading is complete
+                ((CalculatorActivity) getActivity()).setProfileLoading(false);
 
             } else {
                 // If document doesn't exist
                 clearTextViews();
+                progressBar.setVisibility(View.GONE);
+                setButtonsEnabled(true); // Notify activity that loading is complete
+                ((CalculatorActivity) getActivity()).setProfileLoading(false);
             }
         }).addOnFailureListener(e -> {
             // Handle error
             clearTextViews();
+            progressBar.setVisibility(View.GONE);
+            setButtonsEnabled(true); // Notify activity that loading is complete
+            ((CalculatorActivity) getActivity()).setProfileLoading(false);
         });
 
         // Return the fragment view
@@ -231,5 +252,25 @@ public class ProfileFragment extends Fragment {
         tvpro6.setText("");
         tvpro7.setText("");
         tvpro8.setText("");
+    }
+
+    private void setButtonsEnabled(boolean enabled) {
+        tvpro1.setEnabled(enabled);
+        tvpro2.setEnabled(enabled);
+        tvpro3.setEnabled(enabled);
+        tvpro4.setEnabled(enabled);
+        tvpro5.setEnabled(enabled);
+        tvpro6.setEnabled(enabled);
+        tvpro7.setEnabled(enabled);
+        tvpro8.setEnabled(enabled);
+        btnLogOut.setEnabled(enabled); // Notify activity that loading is complete
+        ((CalculatorActivity) getActivity()).setProfileLoading(false);
+    }
+    private void showExitDialogFromFragment() {
+        // Ensure the fragment is attached to an activity that extends BaseActivity
+        if (getActivity() instanceof BaseActivity) {
+            BaseActivity baseActivity = (BaseActivity) getActivity();
+            baseActivity.showExitConfirmationDialog();  // Call the method from BaseActivity
+        }
     }
 }

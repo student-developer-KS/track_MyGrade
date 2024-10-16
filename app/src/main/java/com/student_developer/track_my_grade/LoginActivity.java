@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.MeshSpecification;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.method.PasswordTransformationMethod;
@@ -16,7 +17,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
@@ -33,7 +36,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BaseActivity {
 
     private static final int MIN_PASSWORD_LENGTH = 8;
 
@@ -49,9 +52,17 @@ public class LoginActivity extends AppCompatActivity {
     private static String rollNO;
     private EditText etEmail, etPassword;
     private ProgressBar progressBar;
-    private Button btnSubmitLogin, btnMvToLogin;
+    private Button btnSubmitLogin;
+    private Button btnMvToLogin;
+    private EditText et_PwdReset;
     private FirebaseAuth authLogin;
+    private FirebaseFirestore db;
     private ImageView ivTogglePassword;
+    private TextView forgetPassword;
+    LinearLayout ll_Container,ll_Pwreset;
+    String ReEmail;
+    TextView BackToLogin;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,8 +83,15 @@ public class LoginActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         btnSubmitLogin = findViewById(R.id.btnLoginSubmit);
         btnMvToLogin = findViewById(R.id.btnSignUp);
+        forgetPassword = findViewById(R.id.forgetpassword);
         ivTogglePassword = findViewById(R.id.ivTogglePassword);
+        forgetPassword = findViewById(R.id.forgetpassword);
+        et_PwdReset = findViewById(R.id.et_pwreset_email);
+        BackToLogin = findViewById(R.id.backToLogin);
+        ll_Container = findViewById(R.id.ll_container);
+        ll_Pwreset = findViewById(R.id.ll_pwreset);
         authLogin = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         if (!isNetworkConnected()) {
             showErrorMessage(ERROR_NO_INTERNET);
@@ -93,6 +111,17 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void setOnClickListeners() {
+
+        BackToLogin.setOnClickListener(v->{hideKeyboard(BackToLogin);
+            ll_Container.setVisibility(View.VISIBLE);
+            ll_Pwreset.setVisibility(View.GONE);});
+
+        forgetPassword.setOnClickListener(v ->{
+            hideKeyboard(forgetPassword);
+            ll_Container.setVisibility(View.GONE);
+            ll_Pwreset.setVisibility(View.VISIBLE);
+            validateEmailAndSendReset();});
+
         btnMvToLogin.setOnClickListener(v -> {hideKeyboard(btnSubmitLogin);navigateTo(RegisterActivity.class);});
         btnSubmitLogin.setOnClickListener(v -> {
             hideKeyboard(btnSubmitLogin);
@@ -101,6 +130,75 @@ public class LoginActivity extends AppCompatActivity {
         });
         ivTogglePassword.setOnClickListener(v -> {hideKeyboard(btnSubmitLogin);togglePasswordVisibility();});
         findViewById(R.id.signUpPrompt).setOnClickListener(v ->{hideKeyboard(btnSubmitLogin); navigateTo(RegisterActivity.class);});
+    }
+
+
+    // Method to validate the email and check Firestore
+    private void validateEmailAndSendReset() {
+        findViewById(R.id.btn_PwReset).setOnClickListener(view -> {
+            ReEmail = et_PwdReset.getText().toString().trim();
+
+            // Validate email format
+            if (TextUtils.isEmpty(ReEmail)) {
+                setError(et_PwdReset,ERROR_EMAIL_REQUIRED);
+                return;
+            }
+
+            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(ReEmail).matches()) {
+                setError(et_PwdReset, ERROR_INVALID_EMAIL);
+                return;
+            }
+
+            // Check if the email exists in Firestore under the "GPA" collection
+            db.collection("Users").whereEqualTo("Email", ReEmail).get().addOnCompleteListener(task -> {
+                if (task.isSuccessful() && !task.getResult().isEmpty()) {
+                    // Email exists in Firestore, show AlertDialog to confirm sending the reset email
+                    showResetEmailConfirmationDialog(ReEmail);
+                } else {
+                    // Email does not exist in Firestore
+                   setError(et_PwdReset, "Email not found in records.");
+                     }
+            });
+        });
+    }
+
+    // Method to show an AlertDialog to confirm reset email
+    private void showResetEmailConfirmationDialog(String ReEmail) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Reset Password");
+        builder.setMessage("Do you want to send a password reset link to " + ReEmail + "?");
+
+        // Positive button: Send reset email and open email app
+        builder.setPositiveButton("Yes", (dialog, which) -> sendResetPasswordEmail(ReEmail));
+
+        // Negative button: Dismiss the dialog
+        builder.setNegativeButton("No", (dialog, which) -> dialog.dismiss());
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    // Method to send the reset password email
+    private void sendResetPasswordEmail(String email) {
+        authLogin.sendPasswordResetEmail(email)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        // Notify user that reset link is sent
+                       showToast("Reset link sent to " + email);
+                        // Intent to open the user's email app
+                        Intent emailIntent = new Intent(Intent.ACTION_MAIN);
+                        emailIntent.addCategory(Intent.CATEGORY_APP_EMAIL);
+                        emailIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(Intent.createChooser(emailIntent, "Open email app"));
+                    } else {
+                        // Handle error
+                        String errorMessage = task.getException().getMessage();
+                        showErrorMessage("Error : "+errorMessage);
+                          }
+                });
+
+        ll_Container.setVisibility(View.VISIBLE);
+        ll_Pwreset.setVisibility(View.GONE);
     }
 
     private void navigateTo(Class<?> targetActivity) {
@@ -180,7 +278,7 @@ public class LoginActivity extends AppCompatActivity {
 
         builder.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
+             public void onClick(DialogInterface dialogInterface, int i) {
                 Intent intent = new Intent(Intent.ACTION_MAIN);
                 intent.addCategory(Intent.CATEGORY_APP_EMAIL);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -329,4 +427,8 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        showExitConfirmationDialog(); // Call the method to show the dialog
+    }
 }

@@ -156,6 +156,7 @@ public class CalculatorFragment extends Fragment {
                                         // If the 'Roll No' doesn't match
                                         etConfirmRoll.setBackground(ContextCompat.getDrawable(requireContext(), R.drawable.edit_text_round_corner));
                                         Toast.makeText(requireContext(), "Roll No does not match", Toast.LENGTH_SHORT).show();
+
                                     }
                                 } else {
                                     // If no document with that Roll No exists
@@ -622,7 +623,13 @@ public class CalculatorFragment extends Fragment {
     }
 
 
-
+    private void showExitDialogFromFragment() {
+        // Ensure the fragment is attached to an activity that extends BaseActivity
+        if (getActivity() instanceof BaseActivity) {
+            BaseActivity baseActivity = (BaseActivity) getActivity();
+            baseActivity.showExitConfirmationDialog();  // Call the method from BaseActivity
+        }
+    }
 }
 
 

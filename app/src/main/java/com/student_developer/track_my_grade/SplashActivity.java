@@ -19,10 +19,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.snackbar.Snackbar;
 
 @SuppressLint("CustomSplashScreen")
-public class SplashActivity extends AppCompatActivity {
+public class SplashActivity extends BaseActivity {
 
     private static final int SPLASH_DISPLAY_LENGTH = 3000; // Initial delay for the splash screen
-    private static final int NETWORK_CHECK_INTERVAL = 2000; // Interval to check for network connectivity (2 seconds)
+    private static final int NETWORK_CHECK_INTERVAL = 3000; // Interval to check for network connectivity (2 seconds)
 
     private Handler handler = new Handler(Looper.getMainLooper());
     private Runnable networkCheckRunnable;
@@ -116,5 +116,10 @@ public class SplashActivity extends AppCompatActivity {
         if (handler != null && networkCheckRunnable != null) {
             handler.removeCallbacks(networkCheckRunnable);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        showExitConfirmationDialog(); // Call the method to show the dialog
     }
 }

@@ -74,6 +74,9 @@ dependencies {
 
     implementation ("androidx.appcompat:appcompat:1.6.1")
     implementation ("androidx.fragment:fragment:1.5.5")
+
+
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }
 
 apply(plugin = "com.google.gms.google-services")
