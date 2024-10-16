@@ -2,6 +2,9 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.Track_My_Grade" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="background">@drawable/gradient_bf</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:fitsSystemWindows">false</item>
+
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
     </style>

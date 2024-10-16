@@ -65,7 +65,7 @@ dependencies {
     implementation(libs.firebase.analytics)
 
     // Material Design Components (if needed)
-    // implementation("com.google.android.material:material:1.9.0")
+    implementation("com.google.android.material:material:1.9.0")
 
     // Testing Libraries
     testImplementation(libs.junit)

@@ -2,6 +2,9 @@
 <resources>
     <!-- Custom ProgressBar Style -->
     <style name="CustomProgressBar" parent="Theme.AppCompat.Light">
-        <item name="colorAccent">@color/blue_600</item> <!-- Replace with your color -->
+        <item name="colorAccent">@color/blue_600</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:fitsSystemWindows">false</item>
+
     </style>
 </resources>

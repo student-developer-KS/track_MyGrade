@@ -328,5 +328,20 @@
             android:overScrollMode="always"
             android:theme="@style/CustomProgressBar"
             />
+
+
+        <Button
+            android:id="@+id/mvToAdmin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_gravity="center"
+            android:text="Enter as Admin"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/blue_600"
+            android:visibility="gone"
+            />
     </LinearLayout>
+
+
 </ScrollView>
