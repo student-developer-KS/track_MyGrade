@@ -33,6 +33,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -126,11 +127,47 @@ public class LoginActivity extends BaseActivity {
         btnSubmitLogin.setOnClickListener(v -> {
             hideKeyboard(btnSubmitLogin);
             btnSubmitLogin.setEnabled(false);
+            handleLogin();
             loginUser();
         });
         ivTogglePassword.setOnClickListener(v -> {hideKeyboard(btnSubmitLogin);togglePasswordVisibility();});
         findViewById(R.id.signUpPrompt).setOnClickListener(v ->{hideKeyboard(btnSubmitLogin); navigateTo(RegisterActivity.class);});
     }
+
+    private void handleLogin() {
+        String adminemail = etEmail.getText().toString().trim();
+        String adminpassword = etPassword.getText().toString().trim();
+
+        if (!validateInputs(adminemail, adminpassword)) {
+            btnSubmitLogin.setEnabled(true);
+            return;
+        }
+
+        showProgressBar(true);
+
+        authLogin.signInWithEmailAndPassword(adminemail, adminpassword)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        checkIfAdmin(authLogin.getCurrentUser().getUid());
+                    }
+                });
+    }
+
+    private void checkIfAdmin(String userId) {
+        DocumentReference docRef = db.collection("Admins").document(userId);
+        docRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                String role = documentSnapshot.getString("Role");
+                if ("admin".equals(role)) {
+                    navigateTo(MainActivity.class);
+                } else {
+                    showToast("You have no acces");
+                     }
+            }
+        }).addOnFailureListener(e -> {showErrorMessage("Login failed as Admin");
+              });
+    }
+
 
 
     // Method to validate the email and check Firestore
@@ -406,24 +443,24 @@ public class LoginActivity extends BaseActivity {
 
 
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (authLogin.getCurrentUser() != null) {
-            SharedPreferences sharedPref = getSharedPreferences("UserPref", Context.MODE_PRIVATE);
-            String rollNo = sharedPref.getString("roll_no", null);
-
-            if (rollNo != null) {
-                Snackbar.make(LoginActivity.this.getCurrentFocus(),"Already Logged In! Roll No: " + rollNo, Snackbar.LENGTH_SHORT).show();
-                LoginActivity.rollNO = rollNo; // Save it to the static variable for future use
-
-            } else {
-                Snackbar.make(LoginActivity.this.getCurrentFocus(),"Roll No not found!", Snackbar.LENGTH_SHORT).show();
-            }
-        } else {
-            Snackbar.make(LoginActivity.this.getCurrentFocus(),"You Can Login Now!", Snackbar.LENGTH_SHORT).show();
-        }
-    }
+//    @Override
+//    protected void onStart() {
+//        super.onStart();
+//        if (authLogin.getCurrentUser() != null) {
+//            SharedPreferences sharedPref = getSharedPreferences("UserPref", Context.MODE_PRIVATE);
+//            String rollNo = sharedPref.getString("roll_no", null);
+//
+//            if (rollNo != null) {
+//                Snackbar.make(LoginActivity.this.getCurrentFocus(),"Already Logged In! Roll No: " + rollNo, Snackbar.LENGTH_SHORT).show();
+//                LoginActivity.rollNO = rollNo; // Save it to the static variable for future use
+//
+//            } else {
+//                Snackbar.make(LoginActivity.this.getCurrentFocus(),"Roll No not found!", Snackbar.LENGTH_SHORT).show();
+//            }
+//        } else {
+//            Snackbar.make(LoginActivity.this.getCurrentFocus(),"You Can Login Now!", Snackbar.LENGTH_SHORT).show();
+//        }
+//    }
 
     @Override
     public void onBackPressed() {

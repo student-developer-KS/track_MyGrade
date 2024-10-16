@@ -47,7 +47,7 @@ public class SplashActivity extends BaseActivity {
         handler.postDelayed(() -> {
             if (isUserLoggedIn()) {
                 // If user is logged in, proceed to CalculatorActivity
-                startActivity(new Intent(SplashActivity.this, CalculatorActivity.class));
+                startActivity(new Intent(SplashActivity.this, MainActivity.class));
                 overridePendingTransition(0, 0);
                 finish(); // Finish SplashActivity
             } else {
