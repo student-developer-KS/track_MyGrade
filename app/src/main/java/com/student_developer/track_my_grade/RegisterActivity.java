@@ -95,7 +95,8 @@ public class RegisterActivity extends BaseActivity {
 
     private void setupListeners() {
         // Navigate to Login
-        View.OnClickListener loginClickListener = v -> {hideKeyboard(btnRegisterSubmit);startActivity(new Intent(RegisterActivity.this, LoginActivity.class));};
+        View.OnClickListener loginClickListener = v -> {hideKeyboard(btnRegisterSubmit);startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+            overridePendingTransition(0, 0);};
         btnMoveToLogin.setOnClickListener(loginClickListener);
         tvPrompt.setOnClickListener(loginClickListener);
 
@@ -222,6 +223,8 @@ public class RegisterActivity extends BaseActivity {
                     showToast("Registration successful");
                     clearInputFields();
                     startActivity(new Intent(RegisterActivity.this,LoginActivity.class));
+                    overridePendingTransition(0, 0);
+
                 })
                 .addOnFailureListener(e -> showToast("Registration failed"));
     }
@@ -353,7 +356,6 @@ public class RegisterActivity extends BaseActivity {
     // Override the onBackPressed method to show the exit dialog
     @Override
     public void onBackPressed() {
-
         showExitConfirmationDialog(); // Call the method to show the dialog
     }
 }

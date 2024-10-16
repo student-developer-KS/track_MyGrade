@@ -17,6 +17,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
 
 @SuppressLint("CustomSplashScreen")
 public class SplashActivity extends BaseActivity {
@@ -33,6 +34,7 @@ public class SplashActivity extends BaseActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_splash);
 
+        FirebaseAuth auth = FirebaseAuth.getInstance();
         // Initialize views
         ImageView logo = findViewById(R.id.logo);
         TextView title = findViewById(R.id.titleTextView);
@@ -42,7 +44,23 @@ public class SplashActivity extends BaseActivity {
         animateSplashScreen(logo, title, progressBar);
 
         // Start network check after splash display length
-        handler.postDelayed(() -> checkNetworkAndProceed(), SPLASH_DISPLAY_LENGTH);
+        handler.postDelayed(() -> {
+            if (isUserLoggedIn()) {
+                // If user is logged in, proceed to CalculatorActivity
+                startActivity(new Intent(SplashActivity.this, CalculatorActivity.class));
+                overridePendingTransition(0, 0);
+                finish(); // Finish SplashActivity
+            } else {
+                // User is not logged in, check for network connectivity
+                checkNetworkAndProceed();
+            }
+        }, SPLASH_DISPLAY_LENGTH);
+    }
+
+
+    private boolean isUserLoggedIn() {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        return auth.getCurrentUser() != null; // Return true if user is logged in
     }
 
     private void checkNetworkAndProceed() {
@@ -53,6 +71,7 @@ public class SplashActivity extends BaseActivity {
                 if (isNetworkConnected()) {
                     // If connected, proceed to LoginActivity and finish SplashActivity
                     startActivity(new Intent(SplashActivity.this, LoginActivity.class));
+                    overridePendingTransition(0, 0);
                     finish();
                 } else {
                     // Show a message about no internet and check again after a delay

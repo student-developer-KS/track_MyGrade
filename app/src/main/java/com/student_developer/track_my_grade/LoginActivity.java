@@ -203,6 +203,7 @@ public class LoginActivity extends BaseActivity {
 
     private void navigateTo(Class<?> targetActivity) {
         startActivity(new Intent(LoginActivity.this, targetActivity));
+        overridePendingTransition(0, 0);
         finish();
     }
 
@@ -416,9 +417,6 @@ public class LoginActivity extends BaseActivity {
                 Snackbar.make(LoginActivity.this.getCurrentFocus(),"Already Logged In! Roll No: " + rollNo, Snackbar.LENGTH_SHORT).show();
                 LoginActivity.rollNO = rollNo; // Save it to the static variable for future use
 
-                // Now navigate to CalculatorActivity
-                navigateTo(CalculatorActivity.class);
-                finish();
             } else {
                 Snackbar.make(LoginActivity.this.getCurrentFocus(),"Roll No not found!", Snackbar.LENGTH_SHORT).show();
             }
